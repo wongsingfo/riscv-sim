@@ -1,0 +1,7 @@
+[package]
+name = "objdump"
+version = "0.1.0"
+authors = ["Wang Chengke <wongck@pku.edu.cn>"]
+edition = "2018"
+
+[dependencies]
