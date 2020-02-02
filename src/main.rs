@@ -1,5 +1,6 @@
-use iced::{Button, Color, Column, Container, Element, Length, Row, Sandbox, Scrollable, Settings, Text, Space, Font};
-use iced::{button, scrollable};
+use iced::{Button, Color, Column, Container, Element, Font, Length, Row, Sandbox, Scrollable, Settings, Space, Text, TextInput};
+use iced::{button, scrollable, text_input};
+
 use objdump::Elf;
 
 const MONOSPACED_FONT: Font = Font::External {
@@ -12,13 +13,20 @@ fn main() {
 }
 
 #[derive(Default)]
+struct TextInputState {
+    value: String,
+    state: text_input::State,
+}
+
+#[derive(Default)]
 struct RiscvSim {
     processor: Processor,
-    symtab: SymbolTable,
     load_button: button::State,
     next_button: button::State,
     scroll: scrollable::State,
+    search_symbol: TextInputState,
     elf: Elf,
+    symbols: Vec<(String, u64)>,
 }
 
 #[derive(Debug, Default)]
@@ -29,9 +37,19 @@ struct SymbolTable {}
 
 #[derive(Debug, Clone)]
 enum Message {
-    ShowProcessorPage,
-    ShowSymbolTable,
     LoadFile,
+    SearchInputChanged(String),
+}
+
+impl RiscvSim {
+    fn update_search(&mut self) {
+        let key = &self.search_symbol.value;
+
+        self.symbols =
+            self.elf.symbol_entries.iter().filter(|x| {
+                x.0.contains(key)
+            }).cloned().collect();
+    }
 }
 
 impl Sandbox for RiscvSim {
@@ -52,7 +70,12 @@ impl Sandbox for RiscvSim {
             Message::LoadFile => {
                 if let Ok(rv) = Elf::open("objdump/test_obj/a.out") {
                     self.elf = rv;
+                    self.update_search();
                 }
+            }
+            Message::SearchInputChanged(new_value) => {
+                self.search_symbol.value = new_value;
+                self.update_search();
             }
             _ => {}
         }
@@ -70,10 +93,17 @@ impl Sandbox for RiscvSim {
                 Text::new("Next")))
             .push(Space::with_width(Length::Fill));
 
+        let search_symbol = TextInput::new(
+             &mut self.search_symbol.state,
+            "Search Symbol",
+            &self.search_symbol.value,
+            Message::SearchInputChanged,
+        );
+
         let mut symbols = Column::new()
             .spacing(2);
 
-        for (name, value) in &self.elf.symbol_entries {
+        for (name, value) in &self.symbols {
             let mut t = Row::new()
                 .spacing(10)
                 .push(Text::new(name).width(Length::FillPortion(1)))
@@ -88,11 +118,10 @@ impl Sandbox for RiscvSim {
             .spacing(20)
             .padding(20)
             .push(controls)
+            .push(search_symbol)
             .push(symbols)
             .into();
-
-
-
+        
         let content =
             content.explain(Color::BLACK);
 
@@ -101,7 +130,7 @@ impl Sandbox for RiscvSim {
 
         Container::new(scrollable)
             .height(Length::Fill)
-            .center_y()
+//            .center_y()
             .into()
     }
 }
