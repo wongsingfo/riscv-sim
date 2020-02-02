@@ -3,7 +3,7 @@
 use std::fs::File;
 use std::io::{Seek, SeekFrom};
 
-use error::Error;
+pub use error::Error;
 use header::{
     ElfHeader,
     ProgramEntry,
@@ -18,13 +18,14 @@ mod header;
 mod utils;
 
 #[derive(Default)]
-struct Elf {
+pub struct Elf {
     header: ElfHeader,
     programs: Vec<ProgramEntry>,
     sections: Vec<SectionEntry>,
     symbols: Vec<SymbolEntry>,
     shstrtab: StringTable,
     strtab: StringTable,
+    pub symbol_entries: Vec<(String, u64)>,
 }
 
 impl Elf {
@@ -37,7 +38,7 @@ impl Elf {
         }
     }
 
-    fn open(filename: &str) -> Result<Elf, Error> {
+    pub fn open(filename: &str) -> Result<Elf, Error> {
         let mut elf: Elf = Default::default();
         let mut f = File::open(filename).unwrap();
         elf.header = ElfHeader::from_reader(&mut f)?;
@@ -67,6 +68,8 @@ impl Elf {
         let _ = f.seek(SeekFrom::Start(symtab.offset))?;
         for _ in 0..symtab.size / symtab.entsize {
             let p = SymbolEntry::from_reader(&mut f)?;
+            elf.symbol_entries.push(
+                (elf.strtab.lookup_symbol_name(&p), p.value));
             elf.symbols.push(p);
         }
 
