@@ -1,21 +1,22 @@
 use std::os::macos::raw::stat;
+use std::io::Read;
 
 pub struct Memory {
     segments: Vec<MemorySegment>,
 }
 
-struct MemorySegment {
+pub struct MemorySegment {
     start: u64,
     array: Vec<u8>,
     size: usize,
 }
 
 impl MemorySegment {
-    fn new(start: u64, size: usize) -> Self {
+    pub fn new(start: u64, size: usize) -> Self {
         Self {
             start,
             size,
-            array: Vec::with_capacity(size),
+            array: vec![0; size],
         }
     }
 
@@ -38,6 +39,11 @@ impl MemorySegment {
         let offset = address - self.start;
         self.array[offset as usize]
     }
+
+    pub fn load_from<T>(&mut self, reader: &mut T, size: usize)
+        where T: Read {
+        reader.read_exact(&mut self.array[..size]).unwrap();
+    }
 }
 
 impl Memory {
@@ -45,6 +51,10 @@ impl Memory {
         Self {
             segments: Vec::new(),
         }
+    }
+
+    pub fn push(&mut self, segment: MemorySegment) {
+        self.segments.push(segment);
     }
 
     pub fn alloc(&mut self, start: u64, size: usize) {

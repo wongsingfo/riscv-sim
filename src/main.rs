@@ -1,6 +1,7 @@
 use std::env;
 use objdump::Elf;
 use std::process::exit;
+use crate::simulator::Simulator;
 
 mod memory;
 mod simulator;
@@ -13,8 +14,6 @@ fn main() {
         exit(1)
     }
 
-    let elf: Elf = Elf::open(args[1].as_str())
-        .expect("can not open the binary file");
-
-
+    let mut simulator = Simulator::new();
+    simulator.load_from_elf(args[1].as_str());
 }

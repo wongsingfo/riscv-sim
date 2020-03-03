@@ -20,7 +20,7 @@ mod utils;
 #[derive(Default)]
 pub struct Elf {
     header: ElfHeader,
-    programs: Vec<ProgramEntry>,
+    pub programs: Vec<ProgramEntry>,
     sections: Vec<SectionEntry>,
     symbols: Vec<SymbolEntry>,
     shstrtab: StringTable,
@@ -40,7 +40,7 @@ impl Elf {
 
     pub fn open(filename: &str) -> Result<Elf, Error> {
         let mut elf: Elf = Default::default();
-        let mut f = File::open(filename).unwrap();
+        let mut f = File::open(filename)?;
         elf.header = ElfHeader::from_reader(&mut f)?;
 
         let _ = f.seek(SeekFrom::Start(elf.header.phoff))?;
