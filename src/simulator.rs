@@ -42,8 +42,17 @@ impl Simulator {
             debug_assert!(segment.memsz >= segment.filesz);
             let mut seg = MemorySegment::new(
                 segment.vaddr, segment.memsz as usize);
+            println!("load segment {:x} ~ {:x}",
+                     segment.vaddr,
+                     segment.vaddr + segment.memsz);
             seg.load_from(&mut f, segment.filesz as usize);
-        })
+            self.memory.push(seg);
+        });
+
+        self.pc = elf.symbol_entries.iter()
+            .filter(|x| {
+                x.0.contains("main")
+            }).next().unwrap().1;
     }
 
     fn decode(&mut self) -> Instruction {
@@ -59,9 +68,17 @@ impl Simulator {
         action::matching(inst)
     }
 
-    pub fn single_step(&mut self) {
+    pub fn run(&mut self) {
+        loop {
+            println!("pc = {:x}", self.pc);
+            let inst = self.decode();
+            println!("{:?}", inst);
+            self.single_step(inst);
+        }
+    }
+
+    pub fn single_step(&mut self, inst: Instruction) {
         self.stat.num_inst += 1;
-        let inst = self.decode();
         self.instr[4] = self.instr[3];    // WB
         self.instr[3] = self.instr[2];    // MEM
         self.instr[2] = self.instr[1];    // EX

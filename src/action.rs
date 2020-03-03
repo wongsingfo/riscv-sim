@@ -26,7 +26,7 @@ pub(crate) fn execute(sim: &mut Simulator, inst: Instruction) -> ExecuteInfo {
     let m = &mut sim.memory;
     let pc = &mut sim.pc;
     let mut exe_cycles = 1;
-    let mut mem_access = 0;
+    let mut access = 0;
     let mut load_reg = Default::default();
     let mut reg_read: [Reg; 2] = Default::default();
     let mut is_branch = false;
@@ -38,6 +38,7 @@ pub(crate) fn execute(sim: &mut Simulator, inst: Instruction) -> ExecuteInfo {
         LUI() => {
         },
     };
+    let mem_access = sim.cache.access(access);
     ExecuteInfo {
         exe_cycles,
         mem_access,

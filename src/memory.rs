@@ -95,42 +95,42 @@ impl Memory {
     pub fn store_u8(&mut self, address: u64, value: u8) {
         self.segments.iter_mut()
             .find(|x| x.contains(address))
-            .unwrap()
+            .expect("invalid memory address")
             .store_u8(address, value)
     }
 
     pub fn load_u8(&mut self, address: u64) -> u8 {
         self.segments.iter()
             .find(|x| x.contains(address))
-            .unwrap()
+            .expect("invalid memory address")
             .load_u8(address)
     }
 
     pub fn store_u16(&mut self, address: u64, value: u16) {
         self.segments.iter_mut()
             .find(|x| x.contains(address))
-            .unwrap()
+            .expect("invalid memory address")
             .store_u16(address, value)
     }
 
     pub fn load_u16(&mut self, address: u64) -> u16 {
         self.segments.iter()
             .find(|x| x.contains(address))
-            .unwrap()
+            .expect("invalid memory address")
             .load_u16(address)
     }
 
     pub fn store_u32(&mut self, address: u64, value: u32) {
         self.segments.iter_mut()
             .find(|x| x.contains(address))
-            .unwrap()
+            .expect("invalid memory address")
             .store_u32(address, value)
     }
 
     pub fn load_u32(&mut self, address: u64) -> u32 {
         self.segments.iter()
             .find(|x| x.contains(address))
-            .unwrap()
+            .expect("invalid memory address")
             .load_u32(address)
     }
 }

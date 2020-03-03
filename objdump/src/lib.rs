@@ -19,7 +19,7 @@ mod utils;
 
 #[derive(Default)]
 pub struct Elf {
-    header: ElfHeader,
+    pub header: ElfHeader,
     pub programs: Vec<ProgramEntry>,
     sections: Vec<SectionEntry>,
     symbols: Vec<SymbolEntry>,

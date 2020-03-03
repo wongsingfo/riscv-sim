@@ -20,4 +20,5 @@ fn main() {
 
     let mut simulator = Simulator::new();
     simulator.load_from_elf(args[1].as_str());
+    simulator.run();
 }
