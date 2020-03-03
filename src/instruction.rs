@@ -16,6 +16,7 @@ pub struct ROperands {
     pub rd: Reg,
 }
 
+#[derive(Debug)]
 pub struct IOperands {
     pub imm: u64,
     pub rs1: Reg,

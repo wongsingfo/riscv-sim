@@ -34,6 +34,7 @@ impl RegisterFile {
     }
 
     pub fn set(&mut self, reg: Reg, value: u64) {
+        if reg == 0 { return }
         self.regs[reg as usize] = value
     }
 

@@ -8,6 +8,8 @@ mod simulator;
 mod register;
 mod instruction;
 mod action;
+mod statistic;
+mod cache;
 
 fn main() {
     let args: Vec<String> = env::args().collect();

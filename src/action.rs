@@ -1,41 +1,54 @@
 use crate::simulator::Simulator;
 use crate::instruction::{InstrMatch, IOperands};
 use crate::instruction::InstFormat::*;
-use crate::main;
+use crate::{main, register};
+use crate::register::{Reg};
 use Instruction::*;
 
-fn decode(sim: &mut Simulator) -> Instruction {
-    let inst: u32 = sim.memory.load_u32(sim.pc);
-    if (inst & 0b11) != 0b11 {
-        panic!("oa, it's a 16bit instruction");
-    }
-    if (inst & 0b11100) == 0b11100 {
-        panic!("it's an instruction that is longer that 32bit");
-    }
-    sim.pc += 4;
-
-    matching(inst)
-}
-
+#[derive(Debug)]
 pub enum Instruction {
     ADDI(IOperands),
     LUI(),
 }
 
-fn execute(sim: &mut Simulator, inst: Instruction) {
+#[derive(Default, Copy, Clone)]
+pub struct ExecuteInfo {
+    pub exe_cycles: u64,
+    pub mem_access: u64,
+    pub load_reg: Reg,
+    pub reg_read: [Reg; 2],
+    pub is_branch: bool,
+    pub taken_branch: bool,
+}
+
+pub(crate) fn execute(sim: &mut Simulator, inst: Instruction) -> ExecuteInfo {
     let r = &mut sim.regs;
     let m = &mut sim.memory;
     let pc = &mut sim.pc;
+    let mut exe_cycles = 1;
+    let mut mem_access = 0;
+    let mut load_reg = Default::default();
+    let mut reg_read: [Reg; 2] = Default::default();
+    let mut is_branch = false;
+    let mut taken_branch = false;
     match inst {
         ADDI(IOperands{imm, rs1, rd}) => {
             r.set(rd, r.get(rs1) + imm);
         },
         LUI() => {
         },
+    };
+    ExecuteInfo {
+        exe_cycles,
+        mem_access,
+        load_reg,
+        reg_read,
+        is_branch,
+        taken_branch,
     }
 }
 
-fn matching<T>(code: T) -> Instruction
+pub(crate) fn matching<T>(code: T) -> Instruction
     where T: InstrMatch {
     if code.is_match(IFormat(0b000, 0b0010011)) {
         ADDI(code.decode_I())
