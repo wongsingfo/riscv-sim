@@ -22,11 +22,6 @@ pub struct IOperands {
     pub rd: Reg,
 }
 
-pub enum Instruction {
-    ADDI(IOperands),
-    LUI(),
-}
-
 pub trait InstrMatch {
     fn is_match(&self, format: InstFormat) -> bool;
     fn decode_I(&self) -> IOperands;

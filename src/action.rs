@@ -1,8 +1,8 @@
 use crate::simulator::Simulator;
-use crate::instruction::{Instruction, InstrMatch, IOperands};
+use crate::instruction::{InstrMatch, IOperands};
 use crate::instruction::InstFormat::*;
-use crate::instruction::Instruction::*;
 use crate::main;
+use Instruction::*;
 
 fn decode(sim: &mut Simulator) -> Instruction {
     let inst: u32 = sim.memory.load_u32(sim.pc);
@@ -12,18 +12,26 @@ fn decode(sim: &mut Simulator) -> Instruction {
     if (inst & 0b11100) == 0b11100 {
         panic!("it's an instruction that is longer that 32bit");
     }
+    sim.pc += 4;
 
     matching(inst)
+}
+
+pub enum Instruction {
+    ADDI(IOperands),
+    LUI(),
 }
 
 fn execute(sim: &mut Simulator, inst: Instruction) {
     let r = &mut sim.regs;
     let m = &mut sim.memory;
+    let pc = &mut sim.pc;
     match inst {
         ADDI(IOperands{imm, rs1, rd}) => {
-            r.set(rd, r.get(rs1) + imm)
+            r.set(rd, r.get(rs1) + imm);
         },
-        LUI() => {},
+        LUI() => {
+        },
     }
 }
 
