@@ -5,9 +5,9 @@ use std::fs::File;
 use std::io::{Seek, SeekFrom};
 
 pub struct Simulator {
-    memory: Memory,
-    regs: RegisterFile,
-    pc: u64,
+    pub memory: Memory,
+    pub regs: RegisterFile,
+    pub pc: u64,
 }
 
 impl Simulator {

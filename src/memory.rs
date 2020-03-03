@@ -1,5 +1,6 @@
 use std::os::macos::raw::stat;
 use std::io::Read;
+use byteorder::{ByteOrder, LittleEndian};
 
 pub struct Memory {
     segments: Vec<MemorySegment>,
@@ -34,10 +35,38 @@ impl MemorySegment {
         self.array[offset as usize] = value
     }
 
+    fn store_u16(&mut self, address: u64, value: u16) {
+        debug_assert!(self.contains(address));
+        debug_assert!(self.contains(address + 1));
+        let offset = (address - self.start) as usize;
+        LittleEndian::write_u16(&mut self.array[offset..], value)
+    }
+
+    fn store_u32(&mut self, address: u64, value: u32) {
+        debug_assert!(self.contains(address));
+        debug_assert!(self.contains(address + 2));
+        let offset = (address - self.start) as usize;
+        LittleEndian::write_u32(&mut self.array[offset..], value)
+    }
+
     fn load_u8(&self, address: u64) -> u8 {
         debug_assert!(self.contains(address));
         let offset = address - self.start;
         self.array[offset as usize]
+    }
+
+    fn load_u16(&self, address: u64) -> u16 {
+        debug_assert!(self.contains(address));
+        debug_assert!(self.contains(address + 1));
+        let offset = (address - self.start) as usize;
+        LittleEndian::read_u16(&self.array[offset..])
+    }
+
+    fn load_u32(&self, address: u64) -> u32 {
+        debug_assert!(self.contains(address));
+        debug_assert!(self.contains(address + 3));
+        let offset = (address - self.start) as usize;
+        LittleEndian::read_u32(&self.array[offset..])
     }
 
     pub fn load_from<T>(&mut self, reader: &mut T, size: usize)
@@ -78,7 +107,30 @@ impl Memory {
     }
 
     pub fn store_u16(&mut self, address: u64, value: u16) {
-        self.store_u8(address, value as u8);
-        self.store_u8(address + 1, (value & 0xff) as u8)
+        self.segments.iter_mut()
+            .find(|x| x.contains(address))
+            .unwrap()
+            .store_u16(address, value)
+    }
+
+    pub fn load_u16(&mut self, address: u64) -> u16 {
+        self.segments.iter()
+            .find(|x| x.contains(address))
+            .unwrap()
+            .load_u16(address)
+    }
+
+    pub fn store_u32(&mut self, address: u64, value: u32) {
+        self.segments.iter_mut()
+            .find(|x| x.contains(address))
+            .unwrap()
+            .store_u32(address, value)
+    }
+
+    pub fn load_u32(&mut self, address: u64) -> u32 {
+        self.segments.iter()
+            .find(|x| x.contains(address))
+            .unwrap()
+            .load_u32(address)
     }
 }

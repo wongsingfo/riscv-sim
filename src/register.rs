@@ -12,7 +12,7 @@ const REG_NAME: &'static [&'static str; REG_NUM] = &[
 pub type Reg = u8;
 
 pub struct RegisterFile {
-    regs: [i64; REG_NUM],
+    regs: [u64; REG_NUM],
 }
 
 pub fn from_name(name: &str) -> Reg {
@@ -29,19 +29,19 @@ impl RegisterFile {
         }
     }
 
-    pub fn get(&self, reg: Reg) -> i64 {
+    pub fn get(&self, reg: Reg) -> u64 {
         self.regs[reg as usize]
     }
 
-    pub fn set(&mut self, reg: Reg, value: i64) {
+    pub fn set(&mut self, reg: Reg, value: u64) {
         self.regs[reg as usize] = value
     }
 
-    pub fn get_by_name(&self, reg: &str) -> i64 {
+    pub fn get_by_name(&self, reg: &str) -> u64 {
         self.get(from_name(reg))
     }
 
-    pub fn set_by_name(&mut self, reg: &str, value: i64) {
+    pub fn set_by_name(&mut self, reg: &str, value: u64) {
         self.set(from_name(reg), value)
     }
 }

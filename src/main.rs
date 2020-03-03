@@ -6,6 +6,8 @@ use crate::simulator::Simulator;
 mod memory;
 mod simulator;
 mod register;
+mod instruction;
+mod action;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
