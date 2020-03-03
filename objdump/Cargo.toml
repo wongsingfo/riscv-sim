@@ -5,3 +5,4 @@ authors = ["Wang Chengke <wongck@pku.edu.cn>"]
 edition = "2018"
 
 [dependencies]
+byteorder = "1.3.4"

@@ -1,17 +1,17 @@
+use byteorder::{ByteOrder, LittleEndian};
+
 pub(crate) fn array_as_u16(array: &[u8]) -> u16 {
-    array[0] as u16 +
-        ((array[1] as u16) << 8)
+    LittleEndian::read_u16(array)
 }
 
 pub(crate) fn array_as_u32(array: &[u8]) -> u32 {
-    array_as_u16(&array[0..2]) as u32 +
-        ((array_as_u16(&array[2..4]) as u32) << 16)
+    LittleEndian::read_u32(array)
 }
 
 pub(crate) fn array_as_u64(array: &[u8]) -> u64 {
-    array_as_u32(&array[0..4]) as u64 +
-        ((array_as_u32(&array[4..8]) as u64) << 32)
+    LittleEndian::read_u64(array)
 }
+
 #[test]
 fn test_array_as_u64() {
     let a: [u8; 8] = [1, 2, 3, 4, 5, 6, 7, 8];
