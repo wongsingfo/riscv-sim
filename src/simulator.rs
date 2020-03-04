@@ -63,7 +63,6 @@ impl Simulator {
         if (inst & 0b11100) == 0b11100 {
             panic!("it's an instruction that is longer that 32bit");
         }
-        self.pc += 4;
 
         action::matching(inst)
     }
