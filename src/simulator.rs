@@ -87,7 +87,7 @@ impl Simulator {
             self.instr[3].mem_access,
             self.instr[2].exe_cycles);
         let load_reg = self.instr[3].load_reg;
-        if load_reg != 0 {
+        if load_reg.not_zero() {
             if self.instr[2].reg_read[0] == load_reg
                 || self.instr[2].reg_read[1] == load_reg {
                 self.stat.cycle += 1;

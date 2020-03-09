@@ -1,6 +1,7 @@
 #![allow(non_snake_case)]
 
 use crate::register::Reg;
+use std::fmt::{Debug, Formatter, Error};
 
 const R_MASK: u32 =     0b_1111111_00000_00000_111_00000_1111111_u32;
 const I_MASK: u32 =     0b_0000000_00000_00000_111_00000_1111111_u32;
@@ -81,11 +82,11 @@ fn u32_inst_sign(value: u32, start: u32) -> u64 {
 
 fn u32_opcode(value: u32) -> u32 { u32_bits(value, 0, 7) }
 
-fn u32_rd(value: u32) -> Reg { u32_bits(value, 7, 12) as Reg }
+fn u32_rd(value: u32) -> Reg { Reg::from(u32_bits(value, 7, 12)) }
 
-fn u32_rs1(value: u32) -> Reg { u32_bits(value, 15, 20) as Reg }
+fn u32_rs1(value: u32) -> Reg { Reg::from(u32_bits(value, 15, 20)) }
 
-fn u32_rs2(value: u32) -> Reg { u32_bits(value, 20, 25) as Reg }
+fn u32_rs2(value: u32) -> Reg { Reg::from(u32_bits(value, 20, 25)) }
 
 fn u32_i_imm(value: u32) -> u64 {
     u32_inst_sign(value, 11)

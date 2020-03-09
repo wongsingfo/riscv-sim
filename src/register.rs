@@ -1,3 +1,4 @@
+use std::fmt::{Debug, Formatter, Error};
 
 const REG_NUM: usize = 32;
 
@@ -8,8 +9,36 @@ const REG_NAME: &'static [&'static str; REG_NUM] = &[
     "s8",   "s9", "s10", "s11", "t3", "t4", "t5", "t6"
 ];
 
+#[derive(Copy, Clone, Default)]
+pub struct Reg {
+    index: u8,
+}
 
-pub type Reg = u8;
+impl Debug for Reg {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+        write!(f, "{}", REG_NAME[self.index as usize])
+    }
+}
+
+impl Reg {
+    pub fn not_zero(&self) -> bool {
+        self.index != 0
+    }
+}
+
+impl std::cmp::PartialEq for Reg {
+    fn eq(&self, other: &Self) -> bool {
+        self.index == other.index
+    }
+}
+
+impl From<u32> for Reg {
+    fn from(index: u32) -> Self {
+        Self {
+            index: index as u8
+        }
+    }
+}
 
 pub struct RegisterFile {
     regs: [u64; REG_NUM],
@@ -19,7 +48,9 @@ pub fn from_name(name: &str) -> Reg {
     let i = REG_NAME.iter()
         .position(|&s| s == name)
         .unwrap();
-    i as Reg
+    Reg {
+        index: i as u8
+    }
 }
 
 impl RegisterFile {
@@ -30,12 +61,12 @@ impl RegisterFile {
     }
 
     pub fn get(&self, reg: Reg) -> u64 {
-        self.regs[reg as usize]
+        self.regs[reg.index as usize]
     }
 
     pub fn set(&mut self, reg: Reg, value: u64) {
-        if reg == 0 { return }
-        self.regs[reg as usize] = value
+        if reg.index == 0 { return }
+        self.regs[reg.index as usize] = value
     }
 
     pub fn get_by_name(&self, reg: &str) -> u64 {
