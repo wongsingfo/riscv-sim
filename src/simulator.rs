@@ -12,7 +12,7 @@ use crate::register::{RegisterFile, from_name};
 use crate::statistic::Statistic;
 
 const STACK_ADDRESS: u64 = 0x3f3f3f_fffff;
-const STACK_SIZE: usize = 1024;
+const STACK_SIZE: usize = 4096;
 
 pub struct Simulator {
     pub memory: Memory,
