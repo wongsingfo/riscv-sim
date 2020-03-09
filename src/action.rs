@@ -119,296 +119,393 @@ pub(crate) fn execute(sim: &mut Simulator, inst: Instruction) -> ExecuteInfo {
             let t = *pc + 4; *pc = (r.get(rs1) + imm) & !1; r.set(rd, t);
             ;
             exe_cycles = 1;
+            reg_read[0] = rs1;
         },
         BEQ(BOperands{imm, rs2, rs1}) => {
             is_branch = true; taken_branch = r.get(rs1) == r.get(rs2);
             if taken_branch { *pc += imm } else {*pc += 4};
             exe_cycles = 1;
+            reg_read[0] = rs2;
+            reg_read[1] = rs1;
         },
         BNE(BOperands{imm, rs2, rs1}) => {
             is_branch = true; taken_branch = r.get(rs1) != r.get(rs2);
             if taken_branch { *pc += imm } else {*pc += 4};
             exe_cycles = 1;
+            reg_read[0] = rs2;
+            reg_read[1] = rs1;
         },
         BLT(BOperands{imm, rs2, rs1}) => {
             is_branch = true; taken_branch = (r.get(rs1) as i64) < (r.get(rs2) as i64);
             if taken_branch { *pc += imm } else {*pc += 4};
             exe_cycles = 1;
+            reg_read[0] = rs2;
+            reg_read[1] = rs1;
         },
         BGE(BOperands{imm, rs2, rs1}) => {
             is_branch = true; taken_branch = r.get(rs1) as i64 >= r.get(rs2) as i64;
             if taken_branch { *pc += imm } else {*pc += 4};
             exe_cycles = 1;
+            reg_read[0] = rs2;
+            reg_read[1] = rs1;
         },
         BLTU(BOperands{imm, rs2, rs1}) => {
             is_branch = true; taken_branch = r.get(rs1) < r.get(rs2);
             if taken_branch { *pc += imm } else {*pc += 4};
             exe_cycles = 1;
+            reg_read[0] = rs2;
+            reg_read[1] = rs1;
         },
         BGEU(BOperands{imm, rs2, rs1}) => {
             is_branch = true; taken_branch = r.get(rs1) >= r.get(rs2);
             if taken_branch { *pc += imm } else {*pc += 4};
             exe_cycles = 1;
+            reg_read[0] = rs2;
+            reg_read[1] = rs1;
         },
         LB(IOperands{imm, rs1, rd}) => {
             access = r.get(rs1) + imm; r.set(rd, m.load_u8(access) as i8 as u64);
-            *pc += 4;
+            *pc += 4; load_reg = rd;
             exe_cycles = 1;
+            reg_read[0] = rs1;
         },
         LH(IOperands{imm, rs1, rd}) => {
             access = r.get(rs1) + imm; r.set(rd, m.load_u16(access) as i16 as u64);
-            *pc += 4;
+            *pc += 4; load_reg = rd;
             exe_cycles = 1;
+            reg_read[0] = rs1;
         },
         LW(IOperands{imm, rs1, rd}) => {
             access = r.get(rs1) + imm; r.set(rd, m.load_u32(access) as i32 as u64);
-            *pc += 4;
+            *pc += 4; load_reg = rd;
             exe_cycles = 1;
+            reg_read[0] = rs1;
         },
         LBU(IOperands{imm, rs1, rd}) => {
             access = r.get(rs1) + imm; r.set(rd, m.load_u8(access) as u64);
-            *pc += 4;
+            *pc += 4; load_reg = rd;
             exe_cycles = 1;
+            reg_read[0] = rs1;
         },
         LHU(IOperands{imm, rs1, rd}) => {
             access = r.get(rs1) + imm; r.set(rd, m.load_u16(access) as u64);
-            *pc += 4;
+            *pc += 4; load_reg = rd;
             exe_cycles = 1;
+            reg_read[0] = rs1;
         },
         SB(SOperands{imm, rs2, rs1}) => {
             access = r.get(rs1) + imm; m.store_u8(access, r.get(rs2) as u8);
             *pc += 4;
             exe_cycles = 1;
+            reg_read[0] = rs2;
+            reg_read[1] = rs1;
         },
         SH(SOperands{imm, rs2, rs1}) => {
             access = r.get(rs1) + imm; m.store_u16(access, r.get(rs2) as u16);
             *pc += 4;
             exe_cycles = 1;
+            reg_read[0] = rs2;
+            reg_read[1] = rs1;
         },
         SW(SOperands{imm, rs2, rs1}) => {
             access = r.get(rs1) + imm; m.store_u32(access, r.get(rs2) as u32);
             *pc += 4;
             exe_cycles = 1;
+            reg_read[0] = rs2;
+            reg_read[1] = rs1;
         },
         ADDI(IOperands{imm, rs1, rd}) => {
             r.set(rd, r.get(rs1) + imm);
             *pc += 4;
             exe_cycles = 1;
+            reg_read[0] = rs1;
         },
         SLTI(IOperands{imm, rs1, rd}) => {
             r.set(rd, if (r.get(rs1) as i64) < (imm as i64) {1} else {0});
             *pc += 4;
             exe_cycles = 1;
+            reg_read[0] = rs1;
         },
         SLTIU(IOperands{imm, rs1, rd}) => {
             r.set(rd, if r.get(rs1) < imm {1} else {0});
             *pc += 4;
             exe_cycles = 1;
+            reg_read[0] = rs1;
         },
         XORI(IOperands{imm, rs1, rd}) => {
             r.set(rd, r.get(rs1) ^ imm);
             *pc += 4;
             exe_cycles = 1;
+            reg_read[0] = rs1;
         },
         ORI(IOperands{imm, rs1, rd}) => {
             r.set(rd, r.get(rs1) | imm);
             *pc += 4;
             exe_cycles = 1;
+            reg_read[0] = rs1;
         },
         ANDI(IOperands{imm, rs1, rd}) => {
             r.set(rd, r.get(rs1) & imm);
             *pc += 4;
             exe_cycles = 1;
+            reg_read[0] = rs1;
         },
         SLLI(IOperands{imm, rs1, rd}) => {
             r.set(rd, r.get(rs1) << (imm & 0b111111));
             *pc += 4;
             exe_cycles = 1;
+            reg_read[0] = rs1;
         },
         SRLI(IOperands{imm, rs1, rd}) => {
             r.set(rd, r.get(rs1) >> (imm & 0b111111));
             *pc += 4;
             exe_cycles = 1;
+            reg_read[0] = rs1;
         },
         SRAI(IOperands{imm, rs1, rd}) => {
             r.set(rd, ((r.get(rs1) as i64) >> (imm as i64 & 0b111111)) as u64);
             *pc += 4;
             exe_cycles = 1;
+            reg_read[0] = rs1;
         },
         ADD(ROperands{rs2, rs1, rd}) => {
             r.set(rd, r.get(rs1) + r.get(rs2));
             *pc += 4;
             exe_cycles = 1;
+            reg_read[0] = rs2;
+            reg_read[1] = rs1;
         },
         SUB(ROperands{rs2, rs1, rd}) => {
             r.set(rd, r.get(rs1) - r.get(rs2));
             *pc += 4;
             exe_cycles = 1;
+            reg_read[0] = rs2;
+            reg_read[1] = rs1;
         },
         SLL(ROperands{rs2, rs1, rd}) => {
             r.set(rd, r.get(rs1) << (r.get(rs2) & 0b111111));
             *pc += 4;
             exe_cycles = 1;
+            reg_read[0] = rs2;
+            reg_read[1] = rs1;
         },
         SLT(ROperands{rs2, rs1, rd}) => {
             r.set(rd, if (r.get(rs1) as i64) < (r.get(rs2) as i64) {1} else {0});
             *pc += 4;
             exe_cycles = 1;
+            reg_read[0] = rs2;
+            reg_read[1] = rs1;
         },
         SLTU(ROperands{rs2, rs1, rd}) => {
             r.set(rd, if r.get(rs1) < r.get(rs2) {1} else {0});
             *pc += 4;
             exe_cycles = 1;
+            reg_read[0] = rs2;
+            reg_read[1] = rs1;
         },
         XOR(ROperands{rs2, rs1, rd}) => {
             r.set(rd, r.get(rs1) ^ r.get(rs2));
             *pc += 4;
             exe_cycles = 1;
+            reg_read[0] = rs2;
+            reg_read[1] = rs1;
         },
         SRL(ROperands{rs2, rs1, rd}) => {
             r.set(rd, r.get(rs1) >> (r.get(rs2) & 0b111111));
             *pc += 4;
             exe_cycles = 1;
+            reg_read[0] = rs2;
+            reg_read[1] = rs1;
         },
         SRA(ROperands{rs2, rs1, rd}) => {
             r.set(rd, ((r.get(rs1) as i64) >> (r.get(rs2) as i64 & 0b111111)) as u64);
             *pc += 4;
             exe_cycles = 1;
+            reg_read[0] = rs2;
+            reg_read[1] = rs1;
         },
         OR(ROperands{rs2, rs1, rd}) => {
             r.set(rd, r.get(rs1) | r.get(rs2));
             *pc += 4;
             exe_cycles = 1;
+            reg_read[0] = rs2;
+            reg_read[1] = rs1;
         },
         AND(ROperands{rs2, rs1, rd}) => {
             r.set(rd, r.get(rs1) & r.get(rs2));
             *pc += 4;
             exe_cycles = 1;
+            reg_read[0] = rs2;
+            reg_read[1] = rs1;
         },
         LWU(IOperands{imm, rs1, rd}) => {
             access = r.get(rs1) + imm; r.set(rd, m.load_u32(access) as i32 as u64);
-            *pc += 4;
+            *pc += 4; load_reg = rd;
             exe_cycles = 1;
+            reg_read[0] = rs1;
         },
         LD(IOperands{imm, rs1, rd}) => {
             access = r.get(rs1) + imm; r.set(rd, m.load_u64(access));
-            *pc += 4;
+            *pc += 4; load_reg = rd;
             exe_cycles = 1;
+            reg_read[0] = rs1;
         },
         SD(SOperands{imm, rs2, rs1}) => {
             access = r.get(rs1) + imm; m.store_u64(access, r.get(rs2));
             *pc += 4;
             exe_cycles = 1;
+            reg_read[0] = rs2;
+            reg_read[1] = rs1;
         },
         ADDIW(IOperands{imm, rs1, rd}) => {
             r.set(rd, (r.get(rs1) as i32 + imm as i32) as u64);
             *pc += 4;
             exe_cycles = 1;
+            reg_read[0] = rs1;
         },
         SLLIW(IOperands{imm, rs1, rd}) => {
             r.set(rd, ((r.get(rs1) as i32) << (imm as i32 & 0b011111)) as u64);
             *pc += 4;
             exe_cycles = 1;
+            reg_read[0] = rs1;
         },
         SRLIW(IOperands{imm, rs1, rd}) => {
             r.set(rd, (r.get(rs1) as i32 >> (imm as i32 & 0b011111)) as u64);
             *pc += 4;
             exe_cycles = 1;
+            reg_read[0] = rs1;
         },
         SRAIW(IOperands{imm, rs1, rd}) => {
             r.set(rd, ((r.get(rs1) as i64) >> (imm as i64 & 0b111111)) as u64);
             *pc += 4;
             exe_cycles = 1;
+            reg_read[0] = rs1;
         },
         ADDW(ROperands{rs2, rs1, rd}) => {
             r.set(rd, (r.get(rs1) as i32 + r.get(rs2) as i32) as u64);
             *pc += 4;
             exe_cycles = 1;
+            reg_read[0] = rs2;
+            reg_read[1] = rs1;
         },
         SUBW(ROperands{rs2, rs1, rd}) => {
             r.set(rd, (r.get(rs1) as i32 - r.get(rs2) as i32) as u64);
             *pc += 4;
             exe_cycles = 1;
+            reg_read[0] = rs2;
+            reg_read[1] = rs1;
         },
         SLLW(ROperands{rs2, rs1, rd}) => {
             r.set(rd, ((r.get(rs1) as i32) << (r.get(rs2) as i32 & 0b11111)) as u64);
             *pc += 4;
             exe_cycles = 1;
+            reg_read[0] = rs2;
+            reg_read[1] = rs1;
         },
         SRLW(ROperands{rs2, rs1, rd}) => {
             r.set(rd, (r.get(rs1) as u32 >> (r.get(rs2) as u32 & 0b11111)) as i32 as u64);
             *pc += 4;
             exe_cycles = 1;
+            reg_read[0] = rs2;
+            reg_read[1] = rs1;
         },
         SRAW(ROperands{rs2, rs1, rd}) => {
             r.set(rd, (r.get(rs1) as i32 >> (r.get(rs2) as i32 & 0b11111)) as u64);
             *pc += 4;
             exe_cycles = 1;
+            reg_read[0] = rs2;
+            reg_read[1] = rs1;
         },
         MUL(ROperands{rs2, rs1, rd}) => {
             r.set(rd, r.get(rs1) * r.get(rs2));
             *pc += 4;
             exe_cycles = 5;
+            reg_read[0] = rs2;
+            reg_read[1] = rs1;
         },
         MULH(ROperands{rs2, rs1, rd}) => {
             r.set(rd, ((r.get(rs1) as i128 * r.get(rs2) as i128) >> 64) as u64);
             *pc += 4;
             exe_cycles = 5;
+            reg_read[0] = rs2;
+            reg_read[1] = rs1;
         },
         MULHSU(ROperands{rs2, rs1, rd}) => {
             r.set(rd, ((r.get(rs1) as i128 as u128 * r.get(rs2) as u128) >> 64) as u64);
             *pc += 4;
             exe_cycles = 5;
+            reg_read[0] = rs2;
+            reg_read[1] = rs1;
         },
         MULHU(ROperands{rs2, rs1, rd}) => {
             r.set(rd, ((r.get(rs1) as u128 * r.get(rs2) as u128) >> 64) as u64);
             *pc += 4;
             exe_cycles = 5;
+            reg_read[0] = rs2;
+            reg_read[1] = rs1;
         },
         DIV(ROperands{rs2, rs1, rd}) => {
             r.set(rd, (r.get(rs1) as i64 / r.get(rs2) as i64) as u64);
             *pc += 4;
             exe_cycles = 20;
+            reg_read[0] = rs2;
+            reg_read[1] = rs1;
         },
         DIVU(ROperands{rs2, rs1, rd}) => {
             r.set(rd, r.get(rs1) / r.get(rs2));
             *pc += 4;
             exe_cycles = 20;
+            reg_read[0] = rs2;
+            reg_read[1] = rs1;
         },
         REM(ROperands{rs2, rs1, rd}) => {
             r.set(rd, (r.get(rs1) as i64 % r.get(rs2) as i64) as u64);
             *pc += 4;
             exe_cycles = 20;
+            reg_read[0] = rs2;
+            reg_read[1] = rs1;
         },
         REMU(ROperands{rs2, rs1, rd}) => {
             r.set(rd, r.get(rs1) % r.get(rs2));
             *pc += 4;
             exe_cycles = 20;
+            reg_read[0] = rs2;
+            reg_read[1] = rs1;
         },
         MULW(ROperands{rs2, rs1, rd}) => {
             r.set(rd, (r.get(rs1) as u32 * r.get(rs2) as u32) as i32 as u64);
             *pc += 4;
             exe_cycles = 5;
+            reg_read[0] = rs2;
+            reg_read[1] = rs1;
         },
         DIVW(ROperands{rs2, rs1, rd}) => {
             r.set(rd, (r.get(rs1) as i32 / r.get(rs2) as i32) as u64);
             *pc += 4;
             exe_cycles = 20;
+            reg_read[0] = rs2;
+            reg_read[1] = rs1;
         },
         DIVUW(ROperands{rs2, rs1, rd}) => {
             r.set(rd, (r.get(rs1) as u32 / r.get(rs2) as u32) as i32 as u64);
             *pc += 4;
             exe_cycles = 20;
+            reg_read[0] = rs2;
+            reg_read[1] = rs1;
         },
         REMW(ROperands{rs2, rs1, rd}) => {
             r.set(rd, (r.get(rs1) as i32 % r.get(rs2) as i32) as u64);
             *pc += 4;
             exe_cycles = 20;
+            reg_read[0] = rs2;
+            reg_read[1] = rs1;
         },
         REMUW(ROperands{rs2, rs1, rd}) => {
             r.set(rd, (r.get(rs1) as u32 % r.get(rs2) as u32) as i32 as u64);
             *pc += 4;
             exe_cycles = 20;
+            reg_read[0] = rs2;
+            reg_read[1] = rs1;
         },
 
     };
