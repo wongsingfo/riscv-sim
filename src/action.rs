@@ -106,17 +106,17 @@ pub(crate) fn execute(sim: &mut Simulator, inst: Instruction) -> ExecuteInfo {
             exe_cycles = 1;
         },
         AUIPC(UOperands{imm, rd}) => {
-            *pc += imm; r.set(rd, *pc);
-            ;
+            r.set(rd, *pc + imm);
+            *pc += 4;
             exe_cycles = 1;
         },
         JAL(JOperands{imm, rd}) => {
-            r.set(rd, *pc + 4); *pc += imm;
+            let t = *pc + 4; *pc += imm; r.set(rd, t);;
             ;
             exe_cycles = 1;
         },
         JALR(IOperands{imm, rs1, rd}) => {
-            r.set(rd, *pc + 4); *pc += (r.get(rs1) + imm) & !1;
+            let t = *pc + 4; *pc = (r.get(rs1) + imm) & !1; r.set(rd, t);
             ;
             exe_cycles = 1;
         },
