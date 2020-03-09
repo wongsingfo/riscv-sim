@@ -37,4 +37,6 @@ fn main() {
             },
         }
     });
+
+    simulator.stat.println();
 }
