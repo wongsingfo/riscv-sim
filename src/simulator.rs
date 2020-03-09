@@ -78,19 +78,18 @@ impl Simulator {
         action::matching(inst)
     }
 
-    pub fn run(&mut self) {
-        loop {
-            print!("{:<7x}", self.pc);
-            let inst = self.decode();
-            println!("{:?}", inst);
-            self.single_step(inst);
-            if self.pc == 0 {
-                return;
-            }
+    pub fn run(&mut self) -> bool {
+        if self.pc == 0 {
+            return false
         }
+        print!("{:<7x}", self.pc);
+        let inst = self.decode();
+        println!("{:?}", inst);
+        self.single_step(inst);
+        true
     }
 
-    pub fn single_step(&mut self, inst: Instruction) {
+    fn single_step(&mut self, inst: Instruction) {
         self.stat.num_inst += 1;
         self.instr[4] = self.instr[3];    // WB
         self.instr[3] = self.instr[2];    // MEM

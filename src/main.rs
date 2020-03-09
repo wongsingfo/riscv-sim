@@ -1,7 +1,8 @@
-use std::env;
+use std::{env, io};
 use objdump::Elf;
 use std::process::exit;
 use crate::simulator::Simulator;
+use std::io::Error;
 
 mod memory;
 mod simulator;
@@ -20,7 +21,35 @@ fn main() {
 
     let mut simulator = Simulator::new();
     simulator.load_from_elf(args[1].as_str());
-    simulator.run();
+    if args.len() == 2 {
+        loop {
+            let mut input = String::new();
+            match io::stdin().read_line(&mut input) {
+                Ok(_) => {
+                    match &input[..] {
+                        "regs\n" => simulator.regs.println(),
+                        "s\n" => { simulator.run(); }
+                        "mem\n" => {
+                            let mut input_text = String::new();
+                            io::stdin()
+                                .read_line(&mut input_text)
+                                .expect("failed to read from stdin");
+                            let trimmed = input_text.trim();
+                            match u64::from_str_radix(trimmed, 16) {
+                                Ok(i) => simulator.memory.println(i, 4),
+                                Err(..) => println!("this was not a valid address: {}", trimmed),
+                            }
+                        }
+                        _ => println!("unknown command")
+                    }
+                },
+                Err(_) => {
+                    break
+                },
+            }
+        }
+    }
+    while simulator.run() {}
 
     args[2..].iter().for_each(|s| {
         let res = simulator.elf.symbol_entries.iter()
