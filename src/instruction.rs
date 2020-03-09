@@ -100,7 +100,7 @@ fn u32_s_imm(value: u32) -> u64 {
 }
 
 fn u32_b_imm(value: u32) -> u64 {
-    u32_inst_sign(value, 31)
+    u32_inst_sign(value, 12)
         | u32_inst(value, 7, 8, 11)
         | u32_inst(value, 25, 31, 5)
         | u32_inst(value, 8, 12, 1)
@@ -126,6 +126,7 @@ fn test001() {
     assert_eq!(u32_bits(0xfa5ff0ef, 4, 6), 0b10);
     assert_eq!(u32_inst(0xfa5ff0ef, 0, 6, 4), 0b10_1111_0000);
     assert_eq!(u32_j_imm(0xfa5ff0ef), (-0x5ci32) as u64);
+    assert_eq!(u32_b_imm(0xfae7d8e3), (-0x50i32) as u64)
 }
 
 impl InstrMatch for u32 {
