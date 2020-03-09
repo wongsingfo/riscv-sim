@@ -8,8 +8,11 @@ use crate::action;
 use crate::action::{ExecuteInfo, Instruction};
 use crate::cache::Cache;
 use crate::memory::{Memory, MemorySegment};
-use crate::register::RegisterFile;
+use crate::register::{RegisterFile, from_name};
 use crate::statistic::Statistic;
+
+const STACK_ADDRESS: u64 = 0x3f3f3f_fffff;
+const STACK_SIZE: usize = 1024;
 
 pub struct Simulator {
     pub memory: Memory,
@@ -48,6 +51,10 @@ impl Simulator {
             seg.load_from(&mut f, segment.filesz as usize);
             self.memory.push(seg);
         });
+
+        self.memory.push(MemorySegment::new(
+            STACK_ADDRESS - STACK_SIZE as u64, STACK_SIZE));
+        self.regs.set(from_name("sp"), STACK_ADDRESS);
 
         self.pc = elf.symbol_entries.iter()
             .filter(|x| {
