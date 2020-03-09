@@ -46,6 +46,7 @@ pub struct StringTable {
 pub struct SymbolEntry {
     pub name: u32,
     pub value: u64,
+    pub size: u64,
 }
 
 impl ElfHeader {
@@ -161,6 +162,7 @@ impl SymbolEntry {
 
         rv.name = array_as_u32(&b[0x0..]);
         rv.value = array_as_u64(&b[0x08..]);
+        rv.size = array_as_u64(&b[0x10..]);
 
         Ok(rv)
     }

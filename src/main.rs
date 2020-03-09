@@ -21,4 +21,20 @@ fn main() {
     let mut simulator = Simulator::new();
     simulator.load_from_elf(args[1].as_str());
     simulator.run();
+
+    args[2..].iter().for_each(|s| {
+        let res = simulator.elf.symbol_entries.iter()
+            .filter(|x| {
+                x.0.contains(s)
+            }).next();
+        match res {
+            None => {
+                println!("cannot find {}", s);
+            },
+            Some((s, start, size)) => {
+                println!("{} 0x{:x} {}", s, start, size);
+                simulator.memory.println(*start, *size as usize);
+            },
+        }
+    });
 }

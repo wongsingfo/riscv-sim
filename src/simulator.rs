@@ -17,7 +17,9 @@ const STACK_SIZE: usize = 1024;
 pub struct Simulator {
     pub memory: Memory,
     pub regs: RegisterFile,
+    pub elf: Elf,
     pub pc: u64,
+    pub pc_end: u64,
     pub stat: Statistic,
     pub cache: Cache,
     pub instr: [ExecuteInfo; 5],
@@ -29,6 +31,8 @@ impl Simulator {
             memory: Memory::new(),
             regs: RegisterFile::new(),
             pc: 0,
+            pc_end: 0,
+            elf: Elf::default(),
             stat: Default::default(),
             cache: Cache::new(),
             instr: [ExecuteInfo::default(); 5],
@@ -56,10 +60,14 @@ impl Simulator {
             STACK_ADDRESS - STACK_SIZE as u64, STACK_SIZE));
         self.regs.set(from_name("sp"), STACK_ADDRESS);
 
-        self.pc = elf.symbol_entries.iter()
+        let main = elf.symbol_entries.iter()
             .filter(|x| {
                 x.0.contains("main")
-            }).next().unwrap().1;
+            }).next().unwrap();
+        self.pc = main.1;
+        // FIXME: magic constant 4
+        self.pc_end = main.1 + main.2 - 4;
+        self.elf = elf;
     }
 
     fn decode(&mut self) -> Instruction {
@@ -80,6 +88,9 @@ impl Simulator {
             let inst = self.decode();
             println!("{:?}", inst);
             self.single_step(inst);
+            if self.pc == self.pc_end {
+                return;
+            }
         }
     }
 

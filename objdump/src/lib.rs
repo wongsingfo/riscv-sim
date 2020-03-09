@@ -25,7 +25,8 @@ pub struct Elf {
     symbols: Vec<SymbolEntry>,
     shstrtab: StringTable,
     strtab: StringTable,
-    pub symbol_entries: Vec<(String, u64)>,
+    // FIXME: magic tuple
+    pub symbol_entries: Vec<(String, u64, u64)>,
 }
 
 impl Elf {
@@ -69,7 +70,7 @@ impl Elf {
         for _ in 0..symtab.size / symtab.entsize {
             let p = SymbolEntry::from_reader(&mut f)?;
             elf.symbol_entries.push(
-                (elf.strtab.lookup_symbol_name(&p), p.value));
+                (elf.strtab.lookup_symbol_name(&p), p.value, p.size));
             elf.symbols.push(p);
         }
 

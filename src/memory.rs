@@ -134,7 +134,7 @@ impl Memory {
             .store_u64(address, value)
     }
 
-    pub fn load_u16(&mut self, address: u64) -> u16 {
+    pub fn load_u16(&self, address: u64) -> u16 {
         self.segments.iter()
             .find(|x| x.contains(address))
             .expect("invalid memory address")
@@ -148,17 +148,34 @@ impl Memory {
             .store_u32(address, value)
     }
 
-    pub fn load_u32(&mut self, address: u64) -> u32 {
+    pub fn load_u32(&self, address: u64) -> u32 {
         self.segments.iter()
             .find(|x| x.contains(address))
             .expect("invalid memory address")
             .load_u32(address)
     }
 
-    pub fn load_u64(&mut self, address: u64) -> u64 {
+    pub fn load_u64(&self, address: u64) -> u64 {
         self.segments.iter()
             .find(|x| x.contains(address))
             .expect("invalid memory address")
             .load_u64(address)
+    }
+
+    pub fn println(&self, address: u64, size: usize) {
+        let num = size / 4;
+        let mut indent = 0;
+        for offset in (0..size).step_by(4) {
+            let val = self.load_u32(address + offset as u64);
+            print!("\t{:0>8x}", val);
+            indent += 1;
+            if indent == 4 {
+                indent = 0;
+                println!();
+            }
+        }
+        if indent > 0 {
+            println!();
+        }
     }
 }
