@@ -19,7 +19,6 @@ pub struct Simulator {
     pub regs: RegisterFile,
     pub elf: Elf,
     pub pc: u64,
-    pub pc_end: u64,
     pub stat: Statistic,
     pub cache: Cache,
     pub instr: [ExecuteInfo; 5],
@@ -31,7 +30,6 @@ impl Simulator {
             memory: Memory::new(),
             regs: RegisterFile::new(),
             pc: 0,
-            pc_end: 0,
             elf: Elf::default(),
             stat: Default::default(),
             cache: Cache::new(),
@@ -65,8 +63,6 @@ impl Simulator {
                 x.0.contains("main")
             }).next().unwrap();
         self.pc = main.1;
-        // FIXME: magic constant 4
-        self.pc_end = main.1 + main.2 - 4;
         self.elf = elf;
     }
 
@@ -84,11 +80,11 @@ impl Simulator {
 
     pub fn run(&mut self) {
         loop {
-            println!("pc = {:x}", self.pc);
+            print!("{:<7x}", self.pc);
             let inst = self.decode();
             println!("{:?}", inst);
             self.single_step(inst);
-            if self.pc == self.pc_end {
+            if self.pc == 0 {
                 return;
             }
         }
