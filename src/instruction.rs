@@ -15,6 +15,7 @@ pub enum InstFormat {
     JFormat(u32),
 }
 
+#[derive(Debug)]
 pub struct ROperands {
     pub rs2: Reg,
     pub rs1: Reg,

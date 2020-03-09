@@ -44,9 +44,16 @@ impl MemorySegment {
 
     fn store_u32(&mut self, address: u64, value: u32) {
         debug_assert!(self.contains(address));
-        debug_assert!(self.contains(address + 2));
+        debug_assert!(self.contains(address + 3));
         let offset = (address - self.start) as usize;
         LittleEndian::write_u32(&mut self.array[offset..], value)
+    }
+
+    fn store_u64(&mut self, address: u64, value: u64) {
+        debug_assert!(self.contains(address));
+        debug_assert!(self.contains(address + 7));
+        let offset = (address - self.start) as usize;
+        LittleEndian::write_u64(&mut self.array[offset..], value)
     }
 
     fn load_u8(&self, address: u64) -> u8 {
@@ -67,6 +74,13 @@ impl MemorySegment {
         debug_assert!(self.contains(address + 3));
         let offset = (address - self.start) as usize;
         LittleEndian::read_u32(&self.array[offset..])
+    }
+
+    fn load_u64(&self, address: u64) -> u64 {
+        debug_assert!(self.contains(address));
+        debug_assert!(self.contains(address + 7));
+        let offset = (address - self.start) as usize;
+        LittleEndian::read_u64(&self.array[offset..])
     }
 
     pub fn load_from<T>(&mut self, reader: &mut T, size: usize)
@@ -113,6 +127,13 @@ impl Memory {
             .store_u16(address, value)
     }
 
+    pub fn store_u64(&mut self, address: u64, value: u64) {
+        self.segments.iter_mut()
+            .find(|x| x.contains(address))
+            .expect("invalid memory address")
+            .store_u64(address, value)
+    }
+
     pub fn load_u16(&mut self, address: u64) -> u16 {
         self.segments.iter()
             .find(|x| x.contains(address))
@@ -132,5 +153,12 @@ impl Memory {
             .find(|x| x.contains(address))
             .expect("invalid memory address")
             .load_u32(address)
+    }
+
+    pub fn load_u64(&mut self, address: u64) -> u64 {
+        self.segments.iter()
+            .find(|x| x.contains(address))
+            .expect("invalid memory address")
+            .load_u64(address)
     }
 }
