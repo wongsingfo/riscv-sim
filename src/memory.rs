@@ -167,7 +167,7 @@ impl Memory {
         let mut indent = 0;
         for offset in (0..size).step_by(4) {
             let val = self.load_u32(address + offset as u64);
-            print!("\t{:0>8x}", val);
+            print!("{:0>8x}({})\t", val, val as i32);
             indent += 1;
             if indent == 4 {
                 indent = 0;

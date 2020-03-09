@@ -76,4 +76,17 @@ impl RegisterFile {
     pub fn set_by_name(&mut self, reg: &str, value: u64) {
         self.set(from_name(reg), value)
     }
+
+    pub fn println(&self) {
+        for i in 1..REG_NUM {
+            let reg = Reg { index: i as u8 };
+            let name = REG_NAME[i];
+            let value = self.get(reg);
+            print!("{:<3}={:0>16x} ", name, value);
+            if i % 4 == 0 {
+                println!()
+            }
+        }
+        println!()
+    }
 }
