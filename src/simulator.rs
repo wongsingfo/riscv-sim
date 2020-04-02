@@ -96,14 +96,14 @@ impl Simulator {
         self.instr[2] = self.instr[1];    // EX
         self.instr[1] = self.instr[0];    // ID
         self.instr[0] = action::execute(self, inst);
-        self.stat.cycle += max(
+        let mut cycles = max(
             self.instr[3].mem_access,
             self.instr[2].exe_cycles);
         let load_reg = self.instr[3].load_reg;
         if load_reg.not_zero() {
             if self.instr[2].reg_read[0] == load_reg
                 || self.instr[2].reg_read[1] == load_reg {
-                self.stat.cycle += 1;
+                cycles = max(cycles, 2);
                 self.stat.num_data_hazard += 1;
             }
         }
@@ -113,5 +113,6 @@ impl Simulator {
                 self.stat.num_mis_pred += 1;
             }
         }
+        self.stat.cycle += cycles;
     }
 }

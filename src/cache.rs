@@ -10,6 +10,6 @@ impl Cache {
     }
 
     pub fn access(&self, address: u64) -> u64 {
-        10
+        3
     }
 }
