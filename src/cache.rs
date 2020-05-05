@@ -47,13 +47,32 @@ pub struct DRAM {
 }
 
 pub fn new() -> Box<dyn Storage> {
-    let dram = DRAM {
-        latency: 10,
-    };
-    Box::new(dram)
+    let dram = Box::new(DRAM {
+        latency: 13,
+    });
+    let llc = Box::new(Cache::new(
+        CacheConfig {
+            write_through: false,
+            write_allocate: true,
+            capacity: 8 * 1024 * 1024,
+            associativity: 8,
+            line_size: 64,
+            latency: 4,
+        },
+        dram
+    ));
+
+    llc
 }
 
 impl CacheLines {
+    fn new(size: usize) -> CacheLines {
+        CacheLines {
+            last_visit: 0,
+            lines: vec![CacheLine::default(); size],
+        }
+    }
+
     fn find(&mut self, tag: u64) -> Option<&mut CacheLine> {
         self.last_visit += 1;
         let mut result = self.lines.iter_mut().find(|x| x.tag == tag);
@@ -64,13 +83,16 @@ impl CacheLines {
     }
 
     fn insert(&mut self, tag: u64) {
-        debug_assert!(self.find(tag).is_none());
+        assert!(self.find(tag).is_none());
 
         self.last_visit += 1;
 
         *(match self.lines.iter_mut().find(|x| !x.is_valid) {
             Some(x) => x,
-            None => self.lines.iter_mut().min_by_key(|x| x.last_visit).unwrap(),
+            None => match self.lines.iter_mut().min_by_key(|x| x.last_visit) {
+                Some(x) => x,
+                None => panic!("eviction failed"),
+            },
         }) = CacheLine {
             is_valid: true,
             last_visit: self.last_visit,
@@ -89,7 +111,7 @@ impl Cache {
             lower,
             line_mask: ((num_lines / config.associativity) - 1) * config.line_size,
             tag_mask: !(config.capacity - 1),
-            lines: vec![CacheLines::default(); num_lines as usize],
+            lines: vec![CacheLines::new(config.associativity as usize); num_lines as usize],
         }
     }
 
@@ -131,8 +153,8 @@ impl Cache {
 impl Storage for Cache {
     fn access(&mut self, address: u64, op: CacheOp) -> Duration {
         match op {
-            Read => self.read(address),
-            Write => self.write(address),
+            CacheOp::Read => self.read(address),
+            CacheOp::Write => self.write(address),
         }
     }
 }
