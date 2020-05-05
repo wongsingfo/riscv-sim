@@ -1,63 +1,63 @@
-Name,Type,Funct7,Funct3,opcode,Action1,Action2,Cycles
-LUI,U,,,0110111,"r.set(rd, imm)",*pc += 4,1
-AUIPC,U,,,0010111,"r.set(rd, *pc + imm)",*pc += 4,1
-JAL,J,,,1101111,"let t = *pc + 4; *pc += imm; r.set(rd, t);",,1
-JALR,I,,000,1100111,"let t = *pc + 4; *pc = (r.get(rs1) + imm) & !1; r.set(rd, t)",,1
-BEQ,B,,000,1100011,is_branch = true; taken_branch = r.get(rs1) == r.get(rs2),if taken_branch { *pc += imm } else {*pc += 4},1
-BNE,B,,001,1100011,is_branch = true; taken_branch = r.get(rs1) != r.get(rs2),if taken_branch { *pc += imm } else {*pc += 4},1
-BLT,B,,100,1100011,is_branch = true; taken_branch = (r.get(rs1) as i64) < (r.get(rs2) as i64),if taken_branch { *pc += imm } else {*pc += 4},1
-BGE,B,,101,1100011,is_branch = true; taken_branch = r.get(rs1) as i64 >= r.get(rs2) as i64,if taken_branch { *pc += imm } else {*pc += 4},1
-BLTU,B,,110,1100011,is_branch = true; taken_branch = r.get(rs1) < r.get(rs2),if taken_branch { *pc += imm } else {*pc += 4},1
-BGEU,B,,111,1100011,is_branch = true; taken_branch = r.get(rs1) >= r.get(rs2),if taken_branch { *pc += imm } else {*pc += 4},1
-LB,I,,000,0000011,"access = r.get(rs1) + imm; r.set(rd, m.load_u8(access) as i8 as u64)",*pc += 4; load_reg = rd,1
-LH,I,,001,0000011,"access = r.get(rs1) + imm; r.set(rd, m.load_u16(access) as i16 as u64)",*pc += 4; load_reg = rd,1
-LW,I,,010,0000011,"access = r.get(rs1) + imm; r.set(rd, m.load_u32(access) as i32 as u64)",*pc += 4; load_reg = rd,1
-LBU,I,,100,0000011,"access = r.get(rs1) + imm; r.set(rd, m.load_u8(access) as u64)",*pc += 4; load_reg = rd,1
-LHU,I,,101,0000011,"access = r.get(rs1) + imm; r.set(rd, m.load_u16(access) as u64)",*pc += 4; load_reg = rd,1
-SB,S,,000,0100011,"access = r.get(rs1) + imm; m.store_u8(access, r.get(rs2) as u8)",*pc += 4,1
-SH,S,,001,0100011,"access = r.get(rs1) + imm; m.store_u16(access, r.get(rs2) as u16)",*pc += 4,1
-SW,S,,010,0100011,"access = r.get(rs1) + imm; m.store_u32(access, r.get(rs2) as u32)",*pc += 4,1
-ADDI,I,,000,0010011,"r.set(rd, r.get(rs1) + imm)",*pc += 4,1
-SLTI,I,,010,0010011,"r.set(rd, if (r.get(rs1) as i64) < (imm as i64) {1} else {0})",*pc += 4,1
-SLTIU,I,,011,0010011,"r.set(rd, if r.get(rs1) < imm {1} else {0})",*pc += 4,1
-XORI,I,,100,0010011,"r.set(rd, r.get(rs1) ^ imm)",*pc += 4,1
-ORI,I,,110,0010011,"r.set(rd, r.get(rs1) | imm)",*pc += 4,1
-ANDI,I,,111,0010011,"r.set(rd, r.get(rs1) & imm)",*pc += 4,1
-SLLI,I,0000000,001,0010011,"r.set(rd, r.get(rs1) << (imm & 0b111111))",*pc += 4,1
-SRLI,I,0000000,101,0010011,"r.set(rd, r.get(rs1) >> (imm & 0b111111))",*pc += 4,1
-SRAI,I,0100000,101,0010011,"r.set(rd, ((r.get(rs1) as i64) >> (imm as i64 & 0b111111)) as u64)",*pc += 4,1
-ADD,R,0000000,000,0110011,"r.set(rd, r.get(rs1) + r.get(rs2))",*pc += 4,1
-SUB,R,0100000,000,0110011,"r.set(rd, r.get(rs1) - r.get(rs2))",*pc += 4,1
-SLL,R,0000000,001,0110011,"r.set(rd, r.get(rs1) << (r.get(rs2) & 0b111111))",*pc += 4,1
-SLT,R,0000000,010,0110011,"r.set(rd, if (r.get(rs1) as i64) < (r.get(rs2) as i64) {1} else {0})",*pc += 4,1
-SLTU,R,0000000,011,0110011,"r.set(rd, if r.get(rs1) < r.get(rs2) {1} else {0})",*pc += 4,1
-XOR,R,0000000,100,0110011,"r.set(rd, r.get(rs1) ^ r.get(rs2))",*pc += 4,1
-SRL,R,0000000,101,0110011,"r.set(rd, r.get(rs1) >> (r.get(rs2) & 0b111111))",*pc += 4,1
-SRA,R,0100000,101,0110011,"r.set(rd, ((r.get(rs1) as i64) >> (r.get(rs2) as i64 & 0b111111)) as u64)",*pc += 4,1
-OR,R,0000000,110,0110011,"r.set(rd, r.get(rs1) | r.get(rs2))",*pc += 4,1
-AND,R,0000000,111,0110011,"r.set(rd, r.get(rs1) & r.get(rs2))",*pc += 4,1
-LWU,I,,110,0000011,"access = r.get(rs1) + imm; r.set(rd, m.load_u32(access) as i32 as u64)",*pc += 4; load_reg = rd,1
-LD,I,,011,0000011,"access = r.get(rs1) + imm; r.set(rd, m.load_u64(access))",*pc += 4; load_reg = rd,1
-SD,S,,011,0100011,"access = r.get(rs1) + imm; m.store_u64(access, r.get(rs2))",*pc += 4,1
-ADDIW,I,,000,0011011,"r.set(rd, (r.get(rs1) as i32 + imm as i32) as u64)",*pc += 4,1
-SLLIW,I,0000000,001,0011011,"r.set(rd, ((r.get(rs1) as i32) << (imm as i32 & 0b011111)) as u64)",*pc += 4,1
-SRLIW,I,0000000,101,0011011,"r.set(rd, (r.get(rs1) as i32 >> (imm as i32 & 0b011111)) as u64)",*pc += 4,1
-SRAIW,I,0100000,101,0011011,"r.set(rd, ((r.get(rs1) as i64) >> (imm as i64 & 0b111111)) as u64)",*pc += 4,1
-ADDW,R,0000000,000,0111011,"r.set(rd, (r.get(rs1) as i32 + r.get(rs2) as i32) as u64)",*pc += 4,1
-SUBW,R,0100000,000,0111011,"r.set(rd, (r.get(rs1) as i32 - r.get(rs2) as i32) as u64)",*pc += 4,1
-SLLW,R,0000000,001,0111011,"r.set(rd, ((r.get(rs1) as i32) << (r.get(rs2) as i32 & 0b11111)) as u64)",*pc += 4,1
-SRLW,R,0000000,101,0111011,"r.set(rd, (r.get(rs1) as u32 >> (r.get(rs2) as u32 & 0b11111)) as i32 as u64)",*pc += 4,1
-SRAW,R,0100000,101,0111011,"r.set(rd, (r.get(rs1) as i32 >> (r.get(rs2) as i32 & 0b11111)) as u64)",*pc += 4,1
-MUL,R,0000001,000,0110011,"r.set(rd, r.get(rs1) * r.get(rs2))",*pc += 4,5
-MULH,R,0000001,001,0110011,"r.set(rd, ((r.get(rs1) as i128 * r.get(rs2) as i128) >> 64) as u64)",*pc += 4,5
-MULHSU,R,0000001,010,0110011,"r.set(rd, ((r.get(rs1) as i128 as u128 * r.get(rs2) as u128) >> 64) as u64)",*pc += 4,5
-MULHU,R,0000001,011,0110011,"r.set(rd, ((r.get(rs1) as u128 * r.get(rs2) as u128) >> 64) as u64)",*pc += 4,5
-DIV,R,0000001,100,0110011,"r.set(rd, (r.get(rs1) as i64 / r.get(rs2) as i64) as u64)",*pc += 4,20
-DIVU,R,0000001,101,0110011,"r.set(rd, r.get(rs1) / r.get(rs2))",*pc += 4,20
-REM,R,0000001,110,0110011,"r.set(rd, (r.get(rs1) as i64 % r.get(rs2) as i64) as u64)",*pc += 4,20
-REMU,R,0000001,111,0110011,"r.set(rd, r.get(rs1) % r.get(rs2))",*pc += 4,20
-MULW,R,0000001,000,0111011,"r.set(rd, (r.get(rs1) as u32 * r.get(rs2) as u32) as i32 as u64)",*pc += 4,5
-DIVW,R,0000001,100,0111011,"r.set(rd, (r.get(rs1) as i32 / r.get(rs2) as i32) as u64)",*pc += 4,20
-DIVUW,R,0000001,101,0111011,"r.set(rd, (r.get(rs1) as u32 / r.get(rs2) as u32) as i32 as u64)",*pc += 4,20
-REMW,R,0000001,110,0111011,"r.set(rd, (r.get(rs1) as i32 % r.get(rs2) as i32) as u64)",*pc += 4,20
-REMUW,R,0000001,111,0111011,"r.set(rd, (r.get(rs1) as u32 % r.get(rs2) as u32) as i32 as u64)",*pc += 4,20
+Name,Type,Funct7,Funct3,opcode,Action1,Action2,Cycles,CacheOp
+LUI,U,,,0110111,"r.set(rd, imm)",*pc += 4,1,
+AUIPC,U,,,0010111,"r.set(rd, *pc + imm)",*pc += 4,1,
+JAL,J,,,1101111,"let t = *pc + 4; *pc += imm; r.set(rd, t);",,1,
+JALR,I,,000,1100111,"let t = *pc + 4; *pc = (r.get(rs1) + imm) & !1; r.set(rd, t)",,1,
+BEQ,B,,000,1100011,is_branch = true; taken_branch = r.get(rs1) == r.get(rs2),if taken_branch { *pc += imm } else {*pc += 4},1,
+BNE,B,,001,1100011,is_branch = true; taken_branch = r.get(rs1) != r.get(rs2),if taken_branch { *pc += imm } else {*pc += 4},1,
+BLT,B,,100,1100011,is_branch = true; taken_branch = (r.get(rs1) as i64) < (r.get(rs2) as i64),if taken_branch { *pc += imm } else {*pc += 4},1,
+BGE,B,,101,1100011,is_branch = true; taken_branch = r.get(rs1) as i64 >= r.get(rs2) as i64,if taken_branch { *pc += imm } else {*pc += 4},1,
+BLTU,B,,110,1100011,is_branch = true; taken_branch = r.get(rs1) < r.get(rs2),if taken_branch { *pc += imm } else {*pc += 4},1,
+BGEU,B,,111,1100011,is_branch = true; taken_branch = r.get(rs1) >= r.get(rs2),if taken_branch { *pc += imm } else {*pc += 4},1,
+LB,I,,000,0000011,"access = r.get(rs1) + imm; r.set(rd, m.load_u8(access) as i8 as u64)",*pc += 4; load_reg = rd,1,Read
+LH,I,,001,0000011,"access = r.get(rs1) + imm; r.set(rd, m.load_u16(access) as i16 as u64)",*pc += 4; load_reg = rd,1,Read
+LW,I,,010,0000011,"access = r.get(rs1) + imm; r.set(rd, m.load_u32(access) as i32 as u64)",*pc += 4; load_reg = rd,1,Read
+LBU,I,,100,0000011,"access = r.get(rs1) + imm; r.set(rd, m.load_u8(access) as u64)",*pc += 4; load_reg = rd,1,Read
+LHU,I,,101,0000011,"access = r.get(rs1) + imm; r.set(rd, m.load_u16(access) as u64)",*pc += 4; load_reg = rd,1,Read
+SB,S,,000,0100011,"access = r.get(rs1) + imm; m.store_u8(access, r.get(rs2) as u8)",*pc += 4,1,Write
+SH,S,,001,0100011,"access = r.get(rs1) + imm; m.store_u16(access, r.get(rs2) as u16)",*pc += 4,1,Write
+SW,S,,010,0100011,"access = r.get(rs1) + imm; m.store_u32(access, r.get(rs2) as u32)",*pc += 4,1,Write
+ADDI,I,,000,0010011,"r.set(rd, r.get(rs1) + imm)",*pc += 4,1,
+SLTI,I,,010,0010011,"r.set(rd, if (r.get(rs1) as i64) < (imm as i64) {1} else {0})",*pc += 4,1,
+SLTIU,I,,011,0010011,"r.set(rd, if r.get(rs1) < imm {1} else {0})",*pc += 4,1,
+XORI,I,,100,0010011,"r.set(rd, r.get(rs1) ^ imm)",*pc += 4,1,
+ORI,I,,110,0010011,"r.set(rd, r.get(rs1) | imm)",*pc += 4,1,
+ANDI,I,,111,0010011,"r.set(rd, r.get(rs1) & imm)",*pc += 4,1,
+SLLI,I,0000000,001,0010011,"r.set(rd, r.get(rs1) << (imm & 0b111111))",*pc += 4,1,
+SRLI,I,0000000,101,0010011,"r.set(rd, r.get(rs1) >> (imm & 0b111111))",*pc += 4,1,
+SRAI,I,0100000,101,0010011,"r.set(rd, ((r.get(rs1) as i64) >> (imm as i64 & 0b111111)) as u64)",*pc += 4,1,
+ADD,R,0000000,000,0110011,"r.set(rd, r.get(rs1) + r.get(rs2))",*pc += 4,1,
+SUB,R,0100000,000,0110011,"r.set(rd, r.get(rs1) - r.get(rs2))",*pc += 4,1,
+SLL,R,0000000,001,0110011,"r.set(rd, r.get(rs1) << (r.get(rs2) & 0b111111))",*pc += 4,1,
+SLT,R,0000000,010,0110011,"r.set(rd, if (r.get(rs1) as i64) < (r.get(rs2) as i64) {1} else {0})",*pc += 4,1,
+SLTU,R,0000000,011,0110011,"r.set(rd, if r.get(rs1) < r.get(rs2) {1} else {0})",*pc += 4,1,
+XOR,R,0000000,100,0110011,"r.set(rd, r.get(rs1) ^ r.get(rs2))",*pc += 4,1,
+SRL,R,0000000,101,0110011,"r.set(rd, r.get(rs1) >> (r.get(rs2) & 0b111111))",*pc += 4,1,
+SRA,R,0100000,101,0110011,"r.set(rd, ((r.get(rs1) as i64) >> (r.get(rs2) as i64 & 0b111111)) as u64)",*pc += 4,1,
+OR,R,0000000,110,0110011,"r.set(rd, r.get(rs1) | r.get(rs2))",*pc += 4,1,
+AND,R,0000000,111,0110011,"r.set(rd, r.get(rs1) & r.get(rs2))",*pc += 4,1,
+LWU,I,,110,0000011,"access = r.get(rs1) + imm; r.set(rd, m.load_u32(access) as i32 as u64)",*pc += 4; load_reg = rd,1,Read
+LD,I,,011,0000011,"access = r.get(rs1) + imm; r.set(rd, m.load_u64(access))",*pc += 4; load_reg = rd,1,Read
+SD,S,,011,0100011,"access = r.get(rs1) + imm; m.store_u64(access, r.get(rs2))",*pc += 4,1,Write
+ADDIW,I,,000,0011011,"r.set(rd, (r.get(rs1) as i32 + imm as i32) as u64)",*pc += 4,1,
+SLLIW,I,0000000,001,0011011,"r.set(rd, ((r.get(rs1) as i32) << (imm as i32 & 0b011111)) as u64)",*pc += 4,1,
+SRLIW,I,0000000,101,0011011,"r.set(rd, (r.get(rs1) as i32 >> (imm as i32 & 0b011111)) as u64)",*pc += 4,1,
+SRAIW,I,0100000,101,0011011,"r.set(rd, ((r.get(rs1) as i64) >> (imm as i64 & 0b111111)) as u64)",*pc += 4,1,
+ADDW,R,0000000,000,0111011,"r.set(rd, (r.get(rs1) as i32 + r.get(rs2) as i32) as u64)",*pc += 4,1,
+SUBW,R,0100000,000,0111011,"r.set(rd, (r.get(rs1) as i32 - r.get(rs2) as i32) as u64)",*pc += 4,1,
+SLLW,R,0000000,001,0111011,"r.set(rd, ((r.get(rs1) as i32) << (r.get(rs2) as i32 & 0b11111)) as u64)",*pc += 4,1,
+SRLW,R,0000000,101,0111011,"r.set(rd, (r.get(rs1) as u32 >> (r.get(rs2) as u32 & 0b11111)) as i32 as u64)",*pc += 4,1,
+SRAW,R,0100000,101,0111011,"r.set(rd, (r.get(rs1) as i32 >> (r.get(rs2) as i32 & 0b11111)) as u64)",*pc += 4,1,
+MUL,R,0000001,000,0110011,"r.set(rd, r.get(rs1) * r.get(rs2))",*pc += 4,5,
+MULH,R,0000001,001,0110011,"r.set(rd, ((r.get(rs1) as i128 * r.get(rs2) as i128) >> 64) as u64)",*pc += 4,5,
+MULHSU,R,0000001,010,0110011,"r.set(rd, ((r.get(rs1) as i128 as u128 * r.get(rs2) as u128) >> 64) as u64)",*pc += 4,5,
+MULHU,R,0000001,011,0110011,"r.set(rd, ((r.get(rs1) as u128 * r.get(rs2) as u128) >> 64) as u64)",*pc += 4,5,
+DIV,R,0000001,100,0110011,"r.set(rd, (r.get(rs1) as i64 / r.get(rs2) as i64) as u64)",*pc += 4,20,
+DIVU,R,0000001,101,0110011,"r.set(rd, r.get(rs1) / r.get(rs2))",*pc += 4,20,
+REM,R,0000001,110,0110011,"r.set(rd, (r.get(rs1) as i64 % r.get(rs2) as i64) as u64)",*pc += 4,20,
+REMU,R,0000001,111,0110011,"r.set(rd, r.get(rs1) % r.get(rs2))",*pc += 4,20,
+MULW,R,0000001,000,0111011,"r.set(rd, (r.get(rs1) as u32 * r.get(rs2) as u32) as i32 as u64)",*pc += 4,5,
+DIVW,R,0000001,100,0111011,"r.set(rd, (r.get(rs1) as i32 / r.get(rs2) as i32) as u64)",*pc += 4,20,
+DIVUW,R,0000001,101,0111011,"r.set(rd, (r.get(rs1) as u32 / r.get(rs2) as u32) as i32 as u64)",*pc += 4,20,
+REMW,R,0000001,110,0111011,"r.set(rd, (r.get(rs1) as i32 % r.get(rs2) as i32) as u64)",*pc += 4,20,
+REMUW,R,0000001,111,0111011,"r.set(rd, (r.get(rs1) as u32 % r.get(rs2) as u32) as i32 as u64)",*pc += 4,20,

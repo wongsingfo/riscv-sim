@@ -8,6 +8,7 @@ use crate::instruction::*;
 use crate::instruction::InstFormat::*;
 use crate::{main, register};
 use crate::register::{Reg};
+use crate::cache::CacheOp;
 use Instruction::*;
 
 #[derive(Default, Copy, Clone)]
@@ -98,6 +99,7 @@ pub(crate) fn execute(sim: &mut Simulator, inst: Instruction) -> ExecuteInfo {
     let mut reg_read: [Reg; 2] = Default::default();
     let mut is_branch = false;
     let mut taken_branch = false;
+    let mut access_op = CacheOp::Read;
     match inst {
 
         LUI(UOperands{imm, rd}) => {
@@ -167,36 +169,42 @@ pub(crate) fn execute(sim: &mut Simulator, inst: Instruction) -> ExecuteInfo {
             access = r.get(rs1) + imm; r.set(rd, m.load_u8(access) as i8 as u64);
             *pc += 4; load_reg = rd;
             exe_cycles = 1;
+            access_op = CacheOp::Read;
             reg_read[0] = rs1;
         },
         LH(IOperands{imm, rs1, rd}) => {
             access = r.get(rs1) + imm; r.set(rd, m.load_u16(access) as i16 as u64);
             *pc += 4; load_reg = rd;
             exe_cycles = 1;
+            access_op = CacheOp::Read;
             reg_read[0] = rs1;
         },
         LW(IOperands{imm, rs1, rd}) => {
             access = r.get(rs1) + imm; r.set(rd, m.load_u32(access) as i32 as u64);
             *pc += 4; load_reg = rd;
             exe_cycles = 1;
+            access_op = CacheOp::Read;
             reg_read[0] = rs1;
         },
         LBU(IOperands{imm, rs1, rd}) => {
             access = r.get(rs1) + imm; r.set(rd, m.load_u8(access) as u64);
             *pc += 4; load_reg = rd;
             exe_cycles = 1;
+            access_op = CacheOp::Read;
             reg_read[0] = rs1;
         },
         LHU(IOperands{imm, rs1, rd}) => {
             access = r.get(rs1) + imm; r.set(rd, m.load_u16(access) as u64);
             *pc += 4; load_reg = rd;
             exe_cycles = 1;
+            access_op = CacheOp::Read;
             reg_read[0] = rs1;
         },
         SB(SOperands{imm, rs2, rs1}) => {
             access = r.get(rs1) + imm; m.store_u8(access, r.get(rs2) as u8);
             *pc += 4;
             exe_cycles = 1;
+            access_op = CacheOp::Write;
             reg_read[0] = rs2;
             reg_read[1] = rs1;
         },
@@ -204,6 +212,7 @@ pub(crate) fn execute(sim: &mut Simulator, inst: Instruction) -> ExecuteInfo {
             access = r.get(rs1) + imm; m.store_u16(access, r.get(rs2) as u16);
             *pc += 4;
             exe_cycles = 1;
+            access_op = CacheOp::Write;
             reg_read[0] = rs2;
             reg_read[1] = rs1;
         },
@@ -211,6 +220,7 @@ pub(crate) fn execute(sim: &mut Simulator, inst: Instruction) -> ExecuteInfo {
             access = r.get(rs1) + imm; m.store_u32(access, r.get(rs2) as u32);
             *pc += 4;
             exe_cycles = 1;
+            access_op = CacheOp::Write;
             reg_read[0] = rs2;
             reg_read[1] = rs1;
         },
@@ -342,18 +352,21 @@ pub(crate) fn execute(sim: &mut Simulator, inst: Instruction) -> ExecuteInfo {
             access = r.get(rs1) + imm; r.set(rd, m.load_u32(access) as i32 as u64);
             *pc += 4; load_reg = rd;
             exe_cycles = 1;
+            access_op = CacheOp::Read;
             reg_read[0] = rs1;
         },
         LD(IOperands{imm, rs1, rd}) => {
             access = r.get(rs1) + imm; r.set(rd, m.load_u64(access));
             *pc += 4; load_reg = rd;
             exe_cycles = 1;
+            access_op = CacheOp::Read;
             reg_read[0] = rs1;
         },
         SD(SOperands{imm, rs2, rs1}) => {
             access = r.get(rs1) + imm; m.store_u64(access, r.get(rs2));
             *pc += 4;
             exe_cycles = 1;
+            access_op = CacheOp::Write;
             reg_read[0] = rs2;
             reg_read[1] = rs1;
         },
@@ -509,7 +522,7 @@ pub(crate) fn execute(sim: &mut Simulator, inst: Instruction) -> ExecuteInfo {
         },
 
     };
-    let mem_access = sim.cache.access(access);
+    let mem_access = if access == 0 { 0 } else { sim.cache.access(access, access_op) };
     ExecuteInfo {
         exe_cycles,
         mem_access,

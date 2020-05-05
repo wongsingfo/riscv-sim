@@ -6,7 +6,8 @@ use objdump::Elf;
 
 use crate::action;
 use crate::action::{ExecuteInfo, Instruction};
-use crate::cache::Cache;
+use crate::cache;
+use crate::cache::{Storage};
 use crate::memory::{Memory, MemorySegment};
 use crate::register::{RegisterFile, from_name};
 use crate::statistic::Statistic;
@@ -20,7 +21,7 @@ pub struct Simulator {
     pub elf: Elf,
     pub pc: u64,
     pub stat: Statistic,
-    pub cache: Cache,
+    pub cache: Box<dyn Storage>,
     pub instr: [ExecuteInfo; 5],
 }
 
@@ -31,8 +32,8 @@ impl Simulator {
             regs: RegisterFile::new(),
             pc: 0,
             elf: Elf::default(),
-            stat: Default::default(),
-            cache: Cache::new(),
+            stat: Statistic::default(),
+            cache: cache::new(),
             instr: [ExecuteInfo::default(); 5],
         }
     }

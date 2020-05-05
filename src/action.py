@@ -11,6 +11,7 @@ use crate::instruction::*;
 use crate::instruction::InstFormat::*;
 use crate::{main, register};
 use crate::register::{Reg};
+use crate::cache::CacheOp;
 use Instruction::*;
 
 #[derive(Default, Copy, Clone)]
@@ -46,6 +47,7 @@ pub(crate) fn execute(sim: &mut Simulator, inst: Instruction) -> ExecuteInfo {
     let mut reg_read: [Reg; 2] = Default::default();
     let mut is_branch = false;
     let mut taken_branch = false;
+    let mut access_op = CacheOp::Read;
     match inst {
 """)
 
@@ -76,6 +78,8 @@ with open('action.csv', 'r') as csvfile:
 		print('            {};'.format(i["Action1"]))
 		print('            {};'.format(i["Action2"]))
 		print('            exe_cycles = {};'.format(i["Cycles"]))
+		if i["CacheOp"]:
+			print('            access_op = CacheOp::{};'.format(i["CacheOp"]));
 
 		read_reg = dict_read_reg[i["Type"]].split()
 		for i, reg in enumerate(read_reg):
@@ -85,7 +89,7 @@ with open('action.csv', 'r') as csvfile:
 
 print(r"""
     };
-    let mem_access = sim.cache.access(access);
+    let mem_access = if access == 0 { 0 } else { sim.cache.access(access, access_op) };
     ExecuteInfo {
         exe_cycles,
         mem_access,
