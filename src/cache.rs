@@ -153,7 +153,7 @@ impl Cache {
             config,
             lower,
             line_mask: ((num_lines / config.associativity) - 1) * config.line_size,
-            tag_mask: !(config.capacity - 1),
+            tag_mask: !(config.capacity / config.associativity - 1),
             lines: vec![CacheLines::new(config.associativity as usize); num_lines as usize],
         }
     }
@@ -201,6 +201,7 @@ impl Cache {
 fn test001() {
     let llc = Box::new(Cache::new(
         CacheConfig {
+            name: "test",
             write_through: false,
             write_allocate: true,
             capacity: 8 * 1024 * 1024,
@@ -208,11 +209,10 @@ fn test001() {
             line_size: 64,
             latency: 4,
         },
-        Box::new(Dram {
-            latency: 13,
-        })
+        Box::new(Dram::new(13))
     ));
     assert_eq!(llc.line_mask, 0xfffc0);
+    assert_eq!(llc.tag_mask, !0xfffff);
 }
 
 impl Storage for Cache {
