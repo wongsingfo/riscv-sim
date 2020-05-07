@@ -36,8 +36,10 @@ pub struct CacheConfig {
 #[derive(Default, Debug, Clone, Copy)]
 struct CacheLine {
     is_valid: bool,
+    is_dirty: bool,
     last_visit: u64,
     tag: u64,
+    address: u64,
 }
 
 #[derive(Default, Debug, Clone)]
@@ -124,22 +126,31 @@ impl CacheLines {
         result 
     }
 
-    fn insert(&mut self, tag: u64) {
+    // return the address of the victim 
+    fn insert(&mut self, tag: u64, address: u64) -> Option<u64> {
         assert!(self.find(tag).is_none());
 
         self.last_visit += 1;
 
-        *(match self.lines.iter_mut().find(|x| !x.is_valid) {
+        let mut line = (match self.lines.iter_mut().find(|x| !x.is_valid) {
             Some(x) => x,
             None => match self.lines.iter_mut().min_by_key(|x| x.last_visit) {
                 Some(x) => x,
                 None => panic!("eviction failed"),
             },
-        }) = CacheLine {
+        });
+
+        let result = if line.is_dirty { Some(line.address) } else { None };
+
+        *line = CacheLine {
             is_valid: true,
+            is_dirty: false,
             last_visit: self.last_visit,
             tag,
-        }
+            address,
+        };
+
+        result
     }
 }
 
@@ -167,8 +178,11 @@ impl Cache {
             Some(line) => self.config.latency,
             None => {
                 self.stats.num_miss += 1;
-                lines.insert(tag);
-                self.config.latency + self.lower.access(address, CacheOp::Read)
+                self.config.latency + self.lower.access(address, CacheOp::Read) +
+                    match lines.insert(tag, address) {
+                        Some(lower_address) => self.lower.access(lower_address, CacheOp::Write),
+                        None => 0,
+                    }
             },
         }
     }
@@ -182,13 +196,17 @@ impl Cache {
             Some(line) => if self.config.write_through {
                 self.config.latency + self.lower.access(address, CacheOp::Write)
             } else {
+                line.is_dirty = true;
                 self.config.latency
             },
             None => {
                 self.stats.num_miss += 1;
                 if self.config.write_allocate {
-                    lines.insert(tag);
-                    self.config.latency
+                    self.config.latency + self.lower.access(address, CacheOp::Read) +
+                        match lines.insert(tag, address) {
+                            Some(lower_address) => self.lower.access(lower_address, CacheOp::Write),
+                            None => 0,
+                        }
                 } else {
                     self.config.latency + self.lower.access(address, CacheOp::Write)
                 }
