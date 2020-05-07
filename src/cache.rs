@@ -260,14 +260,13 @@ impl Storage for Cache {
 
     fn stats(&self) -> StorageStats {
         let StorageStats {
-            num_access,
             num_miss,
-            time,
+            ..
         } = self.lower.stats();
         StorageStats {
-            num_access: num_access + self.stats.num_access,
             num_miss: num_miss + self.stats.num_miss,
-            time: time + self.stats.time,
+            num_access: self.stats.num_access,
+            time: self.stats.time,
         }
     }
 }
