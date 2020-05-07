@@ -178,11 +178,12 @@ impl Cache {
             Some(line) => self.config.latency,
             None => {
                 self.stats.num_miss += 1;
-                self.config.latency + self.lower.access(address, CacheOp::Read) +
+                let eviction_time = 
                     match lines.insert(tag, address) {
                         Some(lower_address) => self.lower.access(lower_address, CacheOp::Write),
                         None => 0,
-                    }
+                    };
+                self.config.latency + self.lower.access(address, CacheOp::Read) + eviction_time
             },
         }
     }
@@ -202,11 +203,17 @@ impl Cache {
             None => {
                 self.stats.num_miss += 1;
                 if self.config.write_allocate {
-                    self.config.latency + self.lower.access(address, CacheOp::Read) +
+                    let eviction_time = 
                         match lines.insert(tag, address) {
                             Some(lower_address) => self.lower.access(lower_address, CacheOp::Write),
                             None => 0,
-                        }
+                        };
+                    let result = self.config.latency + self.lower.access(address, CacheOp::Read) + eviction_time;
+                    match lines.find(tag) {
+                        Some(line) => line.is_dirty = true,
+                        None => panic!("Internal error"),
+                    }
+                    result
                 } else {
                     self.config.latency + self.lower.access(address, CacheOp::Write)
                 }
