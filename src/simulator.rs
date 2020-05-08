@@ -33,7 +33,7 @@ impl Simulator {
             pc: 0,
             elf: Elf::default(),
             stat: Statistic::default(),
-            cache: cache::new(),
+            cache: cache::new_3_levels(),
             instr: [ExecuteInfo::default(); 5],
         }
     }

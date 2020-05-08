@@ -4,7 +4,7 @@ use std::process::exit;
 use crate::simulator::Simulator;
 use std::io::{Error, BufReader, BufRead};
 use std::fs::File;
-use crate::cache::CacheOp;
+use crate::cache::{CacheOp, Storage, CacheConfig};
 
 mod memory;
 mod simulator;
@@ -71,16 +71,9 @@ fn lab2_pipeline(args: &[String]) {
     simulator.stat.println();
 }
 
-fn lab3_cache(args: &[String]) {
-    if args.len() < 1 {
-        eprintln!("unknown filename");
-        exit(1);
-    }
-
-    let file = File::open(args[0].as_str()).unwrap();
+fn lab3_run(cache: &mut Box<dyn Storage>, filename: &String) -> cache::StorageStats {
+    let file = File::open(filename.as_str()).unwrap();
     let reader = BufReader::new(file);
-
-    let mut cache = cache::new();
 
     for line in reader.lines() {
         let l = line.unwrap();
@@ -101,26 +94,104 @@ fn lab3_cache(args: &[String]) {
         cache.access(addr, op);
     }
 
-    cache.output_stats();
+    cache.stats()
+}
+
+fn lab3_cache(args: &[String]) {
+    if args.len() < 1 {
+        eprintln!("unknown filename");
+        exit(1);
+    }
+
+    let mut cache = cache::new_3_levels();
+
     let cache::StorageStats {
         num_access,
         time,
         ..
-    } = cache.stats();
+    } = lab3_run(&mut cache, &args[0]);
+    cache.output_stats();
 
     println!("AMAT: {}", time as f32 / num_access as f32);
+}
+
+fn lab3_cache1(args: &[String]) {
+    if args.len() < 1 {
+        eprintln!("unknown filename");
+        exit(1);
+    }
+
+    let line_size: &'static [u64] = &[32, 64, 128, 256, 512, 1024, 2048, 4096];
+    let cache_size: &'static [u64] = &[32, 128, 512, 2048, 8192, 32768];
+    let associativity: &'static [u64] = &[1, 2, 4, 8, 16, 32];
+
+    for c in cache_size {
+        for l in line_size {
+            let mut cache = cache::new_1_levels(CacheConfig {
+                    name: "L1",
+                    write_through: false,
+                    write_allocate: true,
+                    capacity: c * 1024,
+                    associativity: 8,
+                    line_size: *l,
+                    latency: 3,
+                });
+            let result = lab3_run(&mut cache, &args[0]);
+            print!("{}\t", result.num_miss as f32 / result.num_access as f32)
+        }
+        println!()
+    }
+
+    println!();
+
+    for c in cache_size {
+        for a in associativity {
+            let mut cache = cache::new_1_levels(CacheConfig {
+                    name: "L1",
+                    write_through: false,
+                    write_allocate: true,
+                    capacity: c * 1024,
+                    associativity: *a,
+                    line_size: 512,
+                    latency: 3,
+                });
+            let result = lab3_run(&mut cache, &args[0]);
+            print!("{}\t", result.num_miss as f32 / result.num_access as f32)
+        }
+        println!()
+    }
+
+    println!();
+
+    for b1 in &[true, false] {
+        for b2 in &[true, false] {
+            let mut cache = cache::new_1_levels(CacheConfig {
+                    name: "L1",
+                    write_through: *b2,
+                    write_allocate: *b1,
+                    capacity: 2 * 1024 * 1024,
+                    associativity: 8,
+                    line_size: 512,
+                    latency: 3,
+                });
+            let result = lab3_run(&mut cache, &args[0]);
+            print!("{}\t", result.time)
+        }
+        println!()
+    }
 }
 
 fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 {
-        eprintln!("Usage: {} [pipeline|cache]", args[0]);
+        eprintln!("Usage: {} [pipeline|cache|cache1]", args[0]);
         exit(1)
     }
 
 
     match args[1].as_str() {
         "cache" => lab3_cache(&args[2..]),
+        "cache1" => lab3_cache1(&args[2..]),
         "pipeline" => lab2_pipeline(&args[2..]),
         _ => {
             eprintln!("Usage: {} [pipeline|cache]", args[0]);

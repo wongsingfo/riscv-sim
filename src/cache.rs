@@ -24,13 +24,13 @@ pub struct StorageStats {
 
 #[derive(Debug, Clone, Copy)]
 pub struct CacheConfig {
-    name: &'static str,
-    write_through: bool,
-    write_allocate: bool,
-    capacity: u64,
-    associativity: u64,
-    line_size: u64,
-    latency: Duration,
+    pub name: &'static str,
+    pub write_through: bool,
+    pub write_allocate: bool,
+    pub capacity: u64,
+    pub associativity: u64,
+    pub line_size: u64,
+    pub latency: Duration,
 }
 
 #[derive(Default, Debug, Clone, Copy)]
@@ -63,8 +63,13 @@ pub struct Dram {
     stats: StorageStats,
 }
 
-pub fn new() -> Box<dyn Storage> {
-    let dram = Box::new(Dram::new(13));
+pub fn new_1_levels(config: CacheConfig) -> Box<dyn Storage> {
+    let dram = Box::new(Dram::new(10));
+    Box::new(Cache::new(config, dram))
+}
+
+pub fn new_3_levels() -> Box<dyn Storage> {
+    let dram = Box::new(Dram::new(19));
     let llc = Box::new(Cache::new(
         CacheConfig {
             name: "LLC",
